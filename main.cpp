@@ -84,7 +84,7 @@ std::string humanize_opcode() {
 };
 
 void unused_opcode(uint16_t opcode) {
-  std::cout << "[-] Met bad opcode" 
+  std::cout << "[-] Met bad opcode" << humanize_opcode(opcode) << std::endl;
 }
 
 int main(int argc, char * argv[]) {
