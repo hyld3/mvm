@@ -26,6 +26,26 @@ enum {
       OP_TRAP,
 };
 
+std::unordered_map<uint16_t, std::string> opcode_mnemonics =
+  {
+   {OP_BR, "BR"},
+   {OP_ADD, "ADD"},
+   {OP_LD, "LD"},
+   {OP_ST, "ST"},
+   {OP_JSR, "JSR"},
+   {OP_AND, "AND"},
+   {OP_LDR, "LDR"},
+   {OP_STR, "STR"},
+   {OP_RTI, "RTI"},
+   {OP_NOT, "NOT"},
+   {OP_LDI, "LDI"},
+   {OP_STI, "STI"},
+   {OP_JMP, "JMP"},
+   {OP_RES, "RES"},
+   {OP_LEA, "LEA"},
+   {OP_TRAP, "TRAP"},
+  };
+
 enum {
       R_R0 = 0,
       R_R1,
@@ -79,12 +99,10 @@ void update_flags(uint16_t r) {
   }
 }
 
-std::string humanize_opcode() {
-
-};
 
 void unused_opcode(uint16_t opcode) {
-  std::cout << "[-] Met bad opcode" << humanize_opcode(opcode) << std::endl;
+  std::cout << "[-] Met bad opcode" <<  opcode_mnemonics[opcode] << std::endl;
+  
 }
 
 int main(int argc, char * argv[]) {
@@ -108,7 +126,7 @@ int main(int argc, char * argv[]) {
   while (running) {
 
     uint16_t instr = mem_read(reg[R_PC]++);
-    uint16_t opcode = instr >> 12;
+    uint16_t opcode =  instr >> 12;
     
     switch(opcode) {
     case OP_ADD:
