@@ -1,1 +1,1 @@
-Tiny virtual machine for future purposes. A lot of artifacts taken from c-style virtual machine implmenetation, which I am trying to convert to c++ ways of doing things. 
+Tiny virtual machine for future purposes. Bits and pieces taken from c-style virtual machine implementations.
