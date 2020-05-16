@@ -7,6 +7,10 @@
 
 #include <bits/stdc++.h>
 
+#define _STDIN_FILENO 0
+#define _STDOUT_FILENO 1
+#define _STDERR_FILENO 2
+
 enum {
       OP_BR = 0,
       OP_ADD,
@@ -76,6 +80,11 @@ enum {
       FL_NEG = 1 << 2
 };
 
+enum {
+      MR_KBSR = 0xFE00, // Keyboard status
+      MR_KBDR = 0xFE02  // Keyboard data
+};
+
 uint16_t reg[R_COUNT];
 uint16_t memory[UINT16_MAX];
 
@@ -93,8 +102,29 @@ bool read_image(char * img) {
   return true;
 }
 
-uint16_t mem_read(uint16_t x) {
-  return x;
+uint16_t check_key() {
+
+  fd_set readfds;
+  FD_ZERO(&readfds);
+  FD_SET(0, &readfds);
+
+  struct
+}
+
+void mem_write(uint16_t addr, uint16_t val) {
+  memory[addr] = val;
+}
+
+uint16_t mem_read(uint16_t addr) {
+  if (addr == MR_KBSR) {
+    if (check_key()) {
+      memory[MR_KBSR] = (1 << 15);
+      memory[MR_KBDR] = std::getchar();
+    } else {
+      memory[MR_KBSR] = 0x0;
+    }
+  }
+  return memory[addr];
 }
 
 void update_flags(uint16_t r) {
@@ -290,7 +320,10 @@ int main(int argc, char * argv[]) {
 	  break;
 	case TRAP_IN:
 	  {
-	    
+	    std::cout << "[*] Enter character: " << std::endl;
+	    char c = std::getchar();
+	    std::putc(c, stdout);
+	    reg[R_R0] = (uint16_t) c;
 	  }
 	  break;
 	case TRAP_PUTSP:
@@ -298,7 +331,7 @@ int main(int argc, char * argv[]) {
 	    uint16_t * c = memory + reg[R_R0];
 
 	    while(*c) {
-	      char o[2];
+	      char o[2] = {0x0};
 	      o[0] = (*c) & 0xFF;
 	      std::putc(o[0], stdout);
 	      o[1] = (*c) >> 8;
