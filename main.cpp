@@ -268,22 +268,53 @@ int main(int argc, char * argv[]) {
       {
 	switch(instr & 0xFF) {
 	case TRAP_GETC:
+	  {
+	    reg[R_R0] = (uint16_t) std::getchar();
+	  }
 	  break;
 	case TRAP_OUT:
+	  {
+	    std::putc((char)reg[R_R0], stdout);
+	    std::fflush(stdout);
+	  }
 	  break;
 	case TRAP_PUTS:
 	  {
 	    uint16_t * c = memory + reg[R_R0];
 	    while (*c) {
 	      std::putc((char) * c, stdout);
+	      ++c;
 	    }
+	    std::fflush(stdout);
 	  }
 	  break;
 	case TRAP_IN:
+	  {
+	    
+	  }
 	  break;
 	case TRAP_PUTSP:
+	  {
+	    uint16_t * c = memory + reg[R_R0];
+
+	    while(*c) {
+	      char o[2];
+	      o[0] = (*c) & 0xFF;
+	      std::putc(o[0], stdout);
+	      o[1] = (*c) >> 8;
+	      if (o[1])
+		std::putc(o[1], stdout);
+	      ++c;
+	    }
+	    std::fflush(stdout);
+	  }
 	  break;
 	case TRAP_HALT:
+	  {
+	    std::cout << "[*] HALTING" << std::cout;
+	    std::fflush(stdout);
+	    running ^= 1;
+	  }
 	  break;
 	default:
 	  break;
