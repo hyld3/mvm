@@ -4,8 +4,8 @@
 #include <memory>
 #include <cassert>
 #include <map>
-#include <bits/stdc++.h>
 #include <ctime>
+#include <csignal>
 
 #include <termios.h>
 
@@ -34,7 +34,7 @@ enum {
       OP_TRAP,
 };
 
-std::unordered_map<uint16_t, std::string> opcode_mnemonics =
+std::map<uint16_t, std::string> opcode_mnemonics =
   {
    {OP_BR, "BR"},
    {OP_ADD, "ADD"},
@@ -123,9 +123,33 @@ uint16_t sign_extend(uint16_t x, int bit_count) {
   return x;
 }
 
+uint16_t swap16(uint16_t x) {
+  return (x << 8) | (x >> 8);
+}
 
-bool read_image(char * img) {
+void read_image_file(FILE * file) {
+  uint16_t origin;
 
+  fread(&origin, sizeof(origin), 1, file);
+  origin = swap16(origin);
+
+  uint16_t max_read = UINT16_MAX - origin;
+  uint16_t * p = memory + origin;
+
+  size_t read = fread(p, sizeof(uint16_t), max_read, file);
+
+  while (read-- > 0) {
+    *p = swap16(*p);
+    ++p;
+  }
+}
+
+bool read_image(char * imgp) {
+  FILE * file = fopen(imgp, "rb");
+  if (!file) {return false;}
+  read_image_file(file);
+
+  fclose(file);
   return true;
 }
 
@@ -182,6 +206,9 @@ int main(int argc, char * argv[]) {
     std::cout << "[-] Failed to load image: " << argv[1] << std::endl;
     std::exit(2);
   }
+
+  signal(SIGINT, handle_interrupt);
+  disable_input_buffering();
 
   enum { PC_START = 0x3000};
 
@@ -251,7 +278,7 @@ int main(int argc, char * argv[]) {
       {
 	// Don't account for validity, just YUMP.
 	uint16_t r1 = (instr >> 6) & 0x7;
-	reg[R_PC] = reg[R1];
+	reg[R_PC] = reg[r1];
       }
       break;
     case OP_JSR:
@@ -373,7 +400,7 @@ int main(int argc, char * argv[]) {
 	  break;
 	case TRAP_HALT:
 	  {
-	    std::cout << "[*] HALTING" << std::cout;
+	    std::cout << "[*] HALTING" << std::endl;
 	    std::fflush(stdout);
 	    running ^= 1;
 	  }
@@ -392,6 +419,7 @@ int main(int argc, char * argv[]) {
       break;
     }
   }
+  restore_input_buffering();
   
   return 0;
 }
