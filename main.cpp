@@ -60,7 +60,15 @@ enum {
       R_COUNT
 };
 
-
+// IO interaction
+enum {
+      TRAP_GETC = 0x20, // Get char, no echo
+      TRAP_OUT = 0x21,  // Output char
+      TRAP_PUTS = 0x22, // Output string
+      TRAP_IN = 0x23,   // Get char, echo 
+      TRAP_PUTSP = 0x24,// Output bin
+      TRAP_HALT = 0x25  // Halt and stfu
+};
 
 enum {
       FL_POS = 1 << 0,
@@ -257,6 +265,30 @@ int main(int argc, char * argv[]) {
       }
       break;
     case OP_TRAP:
+      {
+	switch(instr & 0xFF) {
+	case TRAP_GETC:
+	  break;
+	case TRAP_OUT:
+	  break;
+	case TRAP_PUTS:
+	  {
+	    uint16_t * c = memory + reg[R_R0];
+	    while (*c) {
+	      std::putc((char) * c, stdout);
+	    }
+	  }
+	  break;
+	case TRAP_IN:
+	  break;
+	case TRAP_PUTSP:
+	  break;
+	case TRAP_HALT:
+	  break;
+	default:
+	  break;
+	}
+      }
       break;
     case OP_RES:
     case OP_RTI:
