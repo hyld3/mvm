@@ -4,8 +4,12 @@
 #include <memory>
 #include <cassert>
 #include <map>
-
 #include <bits/stdc++.h>
+#include <ctime>
+
+#include <termios.h>
+
+#include <sys/select.h>
 
 #define _STDIN_FILENO 0
 #define _STDOUT_FILENO 1
@@ -85,9 +89,32 @@ enum {
       MR_KBDR = 0xFE02  // Keyboard data
 };
 
+
+// VM memory and registers
 uint16_t reg[R_COUNT];
 uint16_t memory[UINT16_MAX];
+//
 
+struct termios original_tio;
+
+void disable_input_buffering() {
+  tcgetattr(_STDIN_FILENO, &original_tio);
+
+  struct termios new_tio = original_tio;
+  new_tio.c_lflag &= ~ICANON & ~ECHO;
+
+  tcsetattr(_STDIN_FILENO, TCSANOW, &new_tio);
+}
+
+void restore_input_buffering() {
+  tcsetattr(_STDIN_FILENO, TCSANOW, &original_tio);
+}
+
+void handle_interrupt(int signal) {
+  restore_input_buffering();
+  std::cout << std::endl;
+  std::exit(-2);
+}
 
 uint16_t sign_extend(uint16_t x, int bit_count) {
   if ((x >> (bit_count - 1)) & 1) {
@@ -108,7 +135,9 @@ uint16_t check_key() {
   FD_ZERO(&readfds);
   FD_SET(0, &readfds);
 
-  struct
+  struct timeval timeout = { .tv_usec = 0x0, .tv_sec = 0x0 };
+
+  return select(1, &readfds, NULL, NULL, &timeout) != 0; 
 }
 
 void mem_write(uint16_t addr, uint16_t val) {
